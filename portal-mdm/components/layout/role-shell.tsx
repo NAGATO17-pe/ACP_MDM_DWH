@@ -3,9 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { LogOut } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/lib/auth/rbac";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavItem {
   href: string;
@@ -25,6 +33,11 @@ const ROLE_LABELS: Record<Role, string> = {
   admin: "Administrador MDM",
   executive: "Ejecutivo",
 };
+
+function userInitial(name?: string): string {
+  if (!name) return "?";
+  return name.trim().charAt(0).toUpperCase();
+}
 
 export function RoleShell({ role, userName, navItems, children }: RoleShellProps) {
   const pathname = usePathname();
@@ -66,24 +79,49 @@ export function RoleShell({ role, userName, navItems, children }: RoleShellProps
           })}
         </nav>
 
-        <footer className="border-t border-[var(--color-border)] p-3 text-xs text-[var(--color-text-muted)]">
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="truncate font-medium text-[var(--color-text)]">
-                {userName ?? "Sesión"}
-              </p>
-              <p className="truncate">{ROLE_LABELS[role]}</p>
-            </div>
-            <form action="/api/auth/logout" method="post">
-              <button
-                type="submit"
-                className="hover:bg-[var(--color-surface-2)] inline-flex h-11 w-11 items-center justify-center rounded-md transition"
-                aria-label="Cerrar sesión"
+        <footer className="border-t border-[var(--color-border)] p-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                "flex w-full min-h-[44px] items-center gap-2 rounded-md px-2 py-1.5 text-sm transition",
+                "hover:bg-[var(--color-surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)]",
+              )}
+            >
+              <span
+                aria-hidden
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-semibold text-[var(--color-primary-foreground)]"
+              >
+                {userInitial(userName)}
+              </span>
+              <span className="min-w-0 flex-1 text-left">
+                <span className="block truncate font-medium text-[var(--color-text)]">
+                  {userName ?? "Sesión"}
+                </span>
+                <span className="block truncate text-xs text-[var(--color-text-muted)]">
+                  {ROLE_LABELS[role]}
+                </span>
+              </span>
+              <ChevronDown aria-hidden className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]" />
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent side="top" align="start" className="w-[220px]">
+              <DropdownMenuLabel>{ROLE_LABELS[role]}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => {
+                  const form = document.createElement("form");
+                  form.method = "post";
+                  form.action = "/api/auth/logout";
+                  document.body.appendChild(form);
+                  form.submit();
+                }}
               >
                 <LogOut aria-hidden className="h-4 w-4" />
-              </button>
-            </form>
-          </div>
+                Cerrar sesión
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </footer>
       </aside>
 

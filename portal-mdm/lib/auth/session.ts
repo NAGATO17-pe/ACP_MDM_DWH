@@ -12,6 +12,16 @@ export interface SessionPayload {
   exp?: number;
 }
 
+if (
+  process.env.NODE_ENV === "production" &&
+  !process.env.JWT_PUBLIC_SECRET
+) {
+  throw new Error(
+    "JWT_PUBLIC_SECRET must be set in production. " +
+      "Without it any JWT is accepted without signature verification.",
+  );
+}
+
 /**
  * Server-side session reader. Validates the JWT signature when
  * `JWT_PUBLIC_SECRET` is configured; otherwise decodes without verifying

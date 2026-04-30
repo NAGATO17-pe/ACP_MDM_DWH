@@ -5,7 +5,7 @@ import {
   loginSchema,
   type LoginResponse,
 } from "@/lib/schemas/auth";
-import { JWT_COOKIE_NAME } from "@/lib/auth/session";
+import { COOKIE_NAME, cookieOptions } from "@/lib/auth/cookie-config";
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -31,13 +31,7 @@ export async function POST(request: Request) {
     const tokenData = loginResponseSchema.parse(data);
 
     const response = NextResponse.json({ ok: true });
-    response.cookies.set(JWT_COOKIE_NAME, tokenData.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 8, // 8 horas
-    });
+    response.cookies.set(COOKIE_NAME, tokenData.access_token, cookieOptions(60 * 60 * 8));
     return response;
   } catch (err) {
     if (err instanceof ApiError) {

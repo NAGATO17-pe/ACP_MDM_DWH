@@ -1,7 +1,5 @@
-import { redirect } from "next/navigation";
 import { Compass, FlaskConical, FileText } from "lucide-react";
-import { getSession } from "@/lib/auth/session";
-import { ROLE_HOME } from "@/lib/auth/rbac";
+import { requireRole } from "@/lib/auth/require-role";
 import { RoleShell } from "@/components/layout/role-shell";
 
 const NAV = [
@@ -15,9 +13,7 @@ export default async function AnalystLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
-  if (!session) redirect("/login");
-  if (session.role !== "analyst") redirect(ROLE_HOME[session.role]);
+  const session = await requireRole("analyst");
 
   return (
     <RoleShell role="analyst" userName={session.name ?? session.email} navItems={NAV}>

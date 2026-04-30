@@ -1,7 +1,5 @@
-import { redirect } from "next/navigation";
 import { Database, GitPullRequestArrow, ShieldAlert, History } from "lucide-react";
-import { getSession } from "@/lib/auth/session";
-import { ROLE_HOME } from "@/lib/auth/rbac";
+import { requireRole } from "@/lib/auth/require-role";
 import { RoleShell } from "@/components/layout/role-shell";
 
 const NAV = [
@@ -16,9 +14,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
-  if (!session) redirect("/login");
-  if (session.role !== "admin") redirect(ROLE_HOME[session.role]);
+  const session = await requireRole("admin");
 
   return (
     <RoleShell role="admin" userName={session.name ?? session.email} navItems={NAV}>
