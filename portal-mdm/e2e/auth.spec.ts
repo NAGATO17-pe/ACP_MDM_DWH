@@ -4,14 +4,14 @@ test.describe("Login page", () => {
   test("muestra el formulario de login", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByRole("heading", { name: /Portal MDM/i })).toBeVisible();
-    await expect(page.getByLabel(/correo/i)).toBeVisible();
+    await expect(page.getByLabel(/usuario/i)).toBeVisible();
     await expect(page.getByLabel(/contraseña/i)).toBeVisible();
     await expect(page.getByRole("button", { name: /iniciar sesión/i })).toBeVisible();
   });
 
-  test("muestra error de validación con email inválido", async ({ page }) => {
+  test("muestra error de validación sin usuario", async ({ page }) => {
     await page.goto("/login");
-    await page.getByLabel(/correo/i).fill("no-es-email");
+    await page.getByLabel(/usuario/i).focus();
     await page.getByLabel(/contraseña/i).fill("password123");
     await page.getByLabel(/contraseña/i).blur();
     // Trigger form submit
@@ -21,7 +21,7 @@ test.describe("Login page", () => {
 
   test("muestra error de validación con contraseña corta", async ({ page }) => {
     await page.goto("/login");
-    await page.getByLabel(/correo/i).fill("user@empresa.com");
+    await page.getByLabel(/usuario/i).fill("admin");
     await page.getByLabel(/contraseña/i).fill("123");
     await page.getByLabel(/contraseña/i).blur();
     await expect(page.getByText(/mínimo 8 caracteres/i)).toBeVisible();

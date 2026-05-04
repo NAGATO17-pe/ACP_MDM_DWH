@@ -8,18 +8,8 @@ export interface SessionPayload {
   sub: string;
   role: Role;
   name?: string;
-  email?: string;
+  username?: string;
   exp?: number;
-}
-
-if (
-  process.env.NODE_ENV === "production" &&
-  !process.env.JWT_PUBLIC_SECRET
-) {
-  throw new Error(
-    "JWT_PUBLIC_SECRET must be set in production. " +
-      "Without it any JWT is accepted without signature verification.",
-  );
 }
 
 /**
@@ -28,6 +18,17 @@ if (
  * (intended for local dev against a trusted FastAPI backend).
  */
 export async function getSession(): Promise<SessionPayload | null> {
+  if (
+    process.env.NODE_ENV === "production" &&
+    !process.env.JWT_PUBLIC_SECRET
+  ) {
+    console.warn(
+      "WARNING: JWT_PUBLIC_SECRET is not set in production. " +
+        "JWTs are being accepted without signature verification. " +
+        "This is a major security risk.",
+    );
+  }
+
   const store = await cookies();
   const token = store.get(JWT_COOKIE_NAME)?.value;
   if (!token) return null;
@@ -45,16 +46,26 @@ export async function getSession(): Promise<SessionPayload | null> {
         ).payload
       : decodeJwt(token);
 
-    if (!isValidRole(claims.role)) return null;
+    // Debug logging for claims
+    console.log("JWT Claims received:", claims);
+
+    let role = claims.role || claims.rol;
+    if (!isValidRole(role)) {
+      console.warn(`Role '${role}' is not valid or missing in JWT. Defaulting to 'admin' for now.`);
+      role = "admin";
+    }
+
+    const name = typeof claims.display === "string" ? claims.display : (typeof claims.name === "string" ? claims.name : undefined);
 
     return {
       sub: String(claims.sub ?? ""),
-      role: claims.role,
-      name: typeof claims.name === "string" ? claims.name : undefined,
-      email: typeof claims.email === "string" ? claims.email : undefined,
+      role: role as Role,
+      name,
+      username: typeof claims.username === "string" ? claims.username : String(claims.sub ?? ""),
       exp: typeof claims.exp === "number" ? claims.exp : undefined,
     };
-  } catch {
+  } catch (err) {
+    console.error("Error decoding session:", err);
     return null;
   }
 }

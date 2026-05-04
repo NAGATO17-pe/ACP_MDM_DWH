@@ -3,10 +3,10 @@ import { requireRole } from "@/lib/auth/require-role";
 import { RoleShell } from "@/components/layout/role-shell";
 
 const NAV = [
-  { href: "/entities", label: "Entidades", icon: Database },
-  { href: "/workflows", label: "Workflows", icon: GitPullRequestArrow },
-  { href: "/quality", label: "Calidad de datos", icon: ShieldAlert },
-  { href: "/audit", label: "Auditoría", icon: History },
+  { href: "/entities", label: "Entidades", icon: <Database aria-hidden className="h-4 w-4 shrink-0" /> },
+  { href: "/workflows", label: "Workflows", icon: <GitPullRequestArrow aria-hidden className="h-4 w-4 shrink-0" /> },
+  { href: "/quality", label: "Calidad de datos", icon: <ShieldAlert aria-hidden className="h-4 w-4 shrink-0" /> },
+  { href: "/audit", label: "Auditoría", icon: <History aria-hidden className="h-4 w-4 shrink-0" /> },
 ];
 
 export default async function AdminLayout({
@@ -17,7 +17,7 @@ export default async function AdminLayout({
   const session = await requireRole("admin");
 
   return (
-    <RoleShell role="admin" userName={session.name ?? session.email} navItems={NAV}>
+    <RoleShell role="admin" userName={session.name ?? session.username} navItems={NAV}>
       {children}
     </RoleShell>
   );

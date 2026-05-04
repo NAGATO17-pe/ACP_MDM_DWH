@@ -17,7 +17,7 @@ export function LoginForm() {
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     mode: "onBlur",
-    defaultValues: { email: "", password: "" },
+    defaultValues: { username: "", password: "" },
   });
 
   const onSubmit = form.handleSubmit(async (values) => {
@@ -73,23 +73,23 @@ export function LoginForm() {
       </header>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="text-sm font-medium">
-          Correo corporativo
+        <label htmlFor="username" className="text-sm font-medium">
+          Usuario
         </label>
         <input
-          id="email"
-          type="email"
-          autoComplete="email"
-          inputMode="email"
-          aria-invalid={Boolean(fieldErrors.email)}
-          aria-describedby={fieldErrors.email ? "email-error" : undefined}
+          id="username"
+          type="text"
+          autoComplete="username"
+          inputMode="text"
+          aria-invalid={Boolean(fieldErrors.username)}
+          aria-describedby={fieldErrors.username ? "username-error" : undefined}
           className="bg-surface border-[var(--color-border)] focus:border-[var(--color-primary)] h-11 rounded-md border px-3 text-sm outline-none transition placeholder:text-[var(--color-text-muted)]"
-          placeholder="usuario@empresa.com"
-          {...form.register("email")}
+          placeholder="jdoe"
+          {...form.register("username")}
         />
-        {fieldErrors.email ? (
-          <p id="email-error" role="alert" className="text-xs text-[var(--color-destructive)]">
-            {fieldErrors.email.message}
+        {fieldErrors.username ? (
+          <p id="username-error" role="alert" className="text-xs text-[var(--color-destructive)]">
+            {fieldErrors.username.message}
           </p>
         ) : null}
       </div>

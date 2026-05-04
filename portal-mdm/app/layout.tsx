@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
+import { ToastProvider } from "@/components/providers/toast-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -48,8 +48,9 @@ export default function RootLayout({
         </a>
         <QueryProvider>
           <TooltipProvider delayDuration={300}>
-            {children}
-            <Toaster />
+            <ToastProvider>
+              {children}
+            </ToastProvider>
           </TooltipProvider>
         </QueryProvider>
       </body>

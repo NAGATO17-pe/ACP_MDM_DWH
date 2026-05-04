@@ -88,7 +88,7 @@ export function DataTable<TData, TValue>({
         </span>
       </div>
 
-      <div className="bg-surface overflow-hidden rounded-lg border border-[var(--color-border)]">
+      <div className="bg-surface overflow-x-auto rounded-lg border border-[var(--color-border)]">
         <table className="w-full text-sm">
           <thead className="bg-[var(--color-surface-2)] text-left text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
             {table.getHeaderGroups().map((headerGroup) => (

@@ -63,29 +63,7 @@ function pseudoRandom(seed: number) {
 }
 
 export function generateEntities(count = 60): MdmEntity[] {
-  const rand = pseudoRandom(7);
-  const items: MdmEntity[] = [];
-  for (let i = 0; i < count; i += 1) {
-    const type = TYPES[Math.floor(rand() * TYPES.length)];
-    const status = STATUSES[Math.floor(rand() * STATUSES.length)];
-    const name = NAMES[Math.floor(rand() * NAMES.length)];
-    const completeness = Math.floor(70 + rand() * 30);
-    const daysAgo = Math.floor(rand() * 60);
-    const updatedAt = new Date(
-      Date.now() - daysAgo * 86_400_000,
-    ).toISOString();
-    items.push({
-      id: `ENT-${(1000 + i).toString()}`,
-      type,
-      name,
-      code: `${type.slice(0, 3).toUpperCase()}-${(2000 + i).toString()}`,
-      owner: OWNERS[Math.floor(rand() * OWNERS.length)],
-      status,
-      completeness,
-      updatedAt,
-    });
-  }
-  return items;
+  return [];
 }
 
 export const ENTITY_TYPE_LABEL: Record<EntityType, string> = {

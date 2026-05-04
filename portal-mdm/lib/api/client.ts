@@ -23,6 +23,13 @@ interface ApiOptions extends Omit<RequestInit, "body"> {
   token?: string;
 }
 
+/**
+ * Thin fetch wrapper — realiza la llamada al backend FastAPI y devuelve el JSON parseado.
+ *
+ * @returns La respuesta JSON parseada. **El caller es responsable de validar
+ * el shape con Zod u otro schema validator antes de confiar en los datos.**
+ * Ejemplo: `const data = mySchema.parse(await apiFetch<unknown>(...))`.
+ */
 export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const { body, token, headers, ...rest } = options;
 
@@ -47,6 +54,14 @@ export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promi
         ? String((parsed as { detail: unknown }).detail)
         : res.statusText) || "Request failed";
     throw new ApiError(res.status, message, parsed);
+  }
+
+  // 204 No Content es válido — algunos endpoints no devuelven cuerpo
+  if (res.status === 204) return undefined as T;
+
+  // Guard: respuesta 2xx con cuerpo vacío inesperado → error explícito en lugar de null casteado a T
+  if (parsed === null) {
+    throw new ApiError(res.status, "Respuesta vacía inesperada del servidor", null);
   }
 
   return parsed as T;

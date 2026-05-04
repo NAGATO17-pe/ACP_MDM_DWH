@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
 import { ChevronDown, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/lib/auth/rbac";
@@ -18,7 +17,7 @@ import {
 interface NavItem {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: React.ReactNode;
 }
 
 interface RoleShellProps {
@@ -58,7 +57,6 @@ export function RoleShell({ role, userName, navItems, children }: RoleShellProps
 
         <nav className="flex flex-1 flex-col gap-0.5 p-3" aria-label="Principal">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <Link
@@ -72,7 +70,7 @@ export function RoleShell({ role, userName, navItems, children }: RoleShellProps
                     : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]",
                 )}
               >
-                <Icon aria-hidden className="h-4 w-4 shrink-0" />
+                {item.icon}
                 <span>{item.label}</span>
               </Link>
             );
@@ -125,7 +123,7 @@ export function RoleShell({ role, userName, navItems, children }: RoleShellProps
         </footer>
       </aside>
 
-      <main id="main-content" className="flex min-h-screen flex-col" tabIndex={-1}>
+      <main id="main-content" className="flex min-h-screen flex-col min-w-0" tabIndex={-1}>
         <header className="bg-surface flex h-14 items-center justify-between border-b border-[var(--color-border)] px-6">
           <span className="text-sm font-medium text-[var(--color-text-muted)]">
             {ROLE_LABELS[role]}
@@ -134,7 +132,7 @@ export function RoleShell({ role, userName, navItems, children }: RoleShellProps
             {userName}
           </span>
         </header>
-        <div className="flex-1 p-6">{children}</div>
+        <div className="flex-1 p-4 sm:p-6 min-w-0 overflow-x-hidden">{children}</div>
       </main>
     </div>
   );

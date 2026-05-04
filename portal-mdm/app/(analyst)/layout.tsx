@@ -3,9 +3,9 @@ import { requireRole } from "@/lib/auth/require-role";
 import { RoleShell } from "@/components/layout/role-shell";
 
 const NAV = [
-  { href: "/explore", label: "Exploración", icon: Compass },
-  { href: "/models", label: "Modelos", icon: FlaskConical },
-  { href: "/reports", label: "Reportes", icon: FileText },
+  { href: "/explore", label: "Exploración", icon: <Compass aria-hidden className="h-4 w-4 shrink-0" /> },
+  { href: "/models", label: "Modelos", icon: <FlaskConical aria-hidden className="h-4 w-4 shrink-0" /> },
+  { href: "/reports", label: "Reportes", icon: <FileText aria-hidden className="h-4 w-4 shrink-0" /> },
 ];
 
 export default async function AnalystLayout({
@@ -16,7 +16,7 @@ export default async function AnalystLayout({
   const session = await requireRole("analyst");
 
   return (
-    <RoleShell role="analyst" userName={session.name ?? session.email} navItems={NAV}>
+    <RoleShell role="analyst" userName={session.name ?? session.username} navItems={NAV}>
       {children}
     </RoleShell>
   );

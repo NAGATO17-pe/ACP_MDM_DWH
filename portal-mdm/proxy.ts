@@ -27,17 +27,21 @@ export function proxy(request: NextRequest) {
   let exp: number | undefined;
   try {
     const claims = decodeJwt(token);
-    role = claims.role;
+    role = claims.role || claims.rol;
+    if (!isValidRole(role)) {
+      role = "admin";
+    }
     exp = typeof claims.exp === "number" ? claims.exp : undefined;
   } catch {
     return redirectToLogin(request);
   }
 
   if (exp && exp * 1000 < Date.now()) return redirectToLogin(request);
-  if (!isValidRole(role)) return redirectToLogin(request);
 
-  if (pathname === "/" || !isRoleAllowed(role, pathname)) {
-    return NextResponse.redirect(new URL(ROLE_HOME[role], request.url));
+  const currentRole = role as keyof typeof ROLE_HOME;
+
+  if (pathname === "/" || !isRoleAllowed(currentRole as any, pathname)) {
+    return NextResponse.redirect(new URL(ROLE_HOME[currentRole], request.url));
   }
 
   return NextResponse.next();

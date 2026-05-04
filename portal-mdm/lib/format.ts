@@ -14,7 +14,7 @@ const dateTimeFmt = new Intl.DateTimeFormat("es-PE", {
 
 const numberFmt = new Intl.NumberFormat("es-PE");
 
-export function formatDate(iso: string) {
+export function formatDate(iso: string): string {
   try {
     return dateFmt.format(new Date(iso));
   } catch {
@@ -22,7 +22,7 @@ export function formatDate(iso: string) {
   }
 }
 
-export function formatDateTime(iso: string) {
+export function formatDateTime(iso: string): string {
   try {
     return dateTimeFmt.format(new Date(iso));
   } catch {
@@ -30,10 +30,10 @@ export function formatDateTime(iso: string) {
   }
 }
 
-export function formatNumber(n: number) {
+export function formatNumber(n: number): string {
   return numberFmt.format(n);
 }
 
-export function formatPercent(n: number, fractionDigits = 1) {
+export function formatPercent(n: number, fractionDigits = 1): string {
   return `${n.toFixed(fractionDigits)}%`;
 }

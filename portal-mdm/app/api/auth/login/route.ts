@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { apiFetch, ApiError } from "@/lib/api/client";
+
 import {
   loginResponseSchema,
   loginSchema,
@@ -24,19 +24,39 @@ export async function POST(request: Request) {
   }
 
   try {
-    const data = await apiFetch<LoginResponse>("/auth/login", {
+    const formData = new URLSearchParams();
+    formData.append("username", parsed.data.username);
+    formData.append("password", parsed.data.password);
+
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    const apiRes = await fetch(`${backendUrl}/auth/login`, {
       method: "POST",
-      body: parsed.data,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+      },
+      body: formData,
     });
+
+    const data = await apiRes.json();
+
+    if (!apiRes.ok) {
+      if (apiRes.status === 401 || apiRes.status === 403) {
+        return NextResponse.json({ detail: "Credenciales inválidas" }, { status: 401 });
+      }
+      if (apiRes.status === 422) {
+        return NextResponse.json({ detail: data.detail ?? "Datos rechazados por el servidor (422)" }, { status: 422 });
+      }
+      throw new Error("Error del servidor");
+    }
+
     const tokenData = loginResponseSchema.parse(data);
 
     const response = NextResponse.json({ ok: true });
     response.cookies.set(COOKIE_NAME, tokenData.access_token, cookieOptions(60 * 60 * 8));
     return response;
   } catch (err) {
-    if (err instanceof ApiError) {
-      return NextResponse.json({ detail: err.message }, { status: err.status });
-    }
+    console.error("Login error:", err);
     return NextResponse.json(
       { detail: "Error inesperado al iniciar sesión" },
       { status: 500 },

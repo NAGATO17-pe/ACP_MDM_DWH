@@ -10,6 +10,6 @@ export async function GET() {
     sub: session.sub,
     role: session.role,
     name: session.name,
-    email: session.email,
+    username: session.username,
   });
 }
