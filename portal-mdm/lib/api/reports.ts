@@ -1,16 +1,14 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { apiFetchBlob } from "./client";
 
 export type ReportFormat = "csv" | "pdf";
 
-export async function downloadReport(id: string, format: ReportFormat): Promise<Blob> {
-  const res = await fetch(`${API_URL}/api/v1/reports/${id}/download?format=${format}`, {
-    headers: { accept: format === "pdf" ? "application/pdf" : "text/csv" },
-    cache: "no-store",
+const ACCEPT: Record<ReportFormat, string> = {
+  pdf: "application/pdf",
+  csv: "text/csv",
+};
+
+export function downloadReport(id: string, format: ReportFormat): Promise<Blob> {
+  return apiFetchBlob(`/api/v1/reports/${id}/download?format=${format}`, {
+    accept: ACCEPT[format],
   });
-
-  if (!res.ok) {
-    throw new Error(`Error al generar el reporte: ${res.statusText}`);
-  }
-
-  return res.blob();
 }

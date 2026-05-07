@@ -9,7 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { QUALITY_KPIS } from "@/lib/mock/quality";
+import { getQualityOverview } from "@/lib/api/quality";
+import type { QualityOverview } from "@/lib/schemas/quality";
 import { formatNumber } from "@/lib/format";
 import {
   QualityByEntityChart,
@@ -20,8 +21,22 @@ import {
 
 export const metadata: Metadata = { title: "Calidad de datos" };
 
-export default function QualityPage() {
-  const k = QUALITY_KPIS;
+const EMPTY_OVERVIEW: QualityOverview = {
+  kpis: {
+    completeness: 0,
+    validated: 0,
+    activeErrors: 0,
+    globalScore: 0,
+    deltas: { completeness: 0, validated: 0, activeErrors: 0, globalScore: 0 },
+  },
+  byEntity: [],
+  trend: [],
+  radar: [],
+};
+
+export default async function QualityPage() {
+  const overview = await getQualityOverview().catch(() => EMPTY_OVERVIEW);
+  const k = overview.kpis;
 
   return (
     <div className="flex flex-col gap-6">
@@ -80,7 +95,7 @@ export default function QualityPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <QualityByEntityChart />
+            <QualityByEntityChart data={overview.byEntity} />
           </CardContent>
         </Card>
         <Card>
@@ -113,7 +128,7 @@ export default function QualityPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <QualityTrendChart />
+            <QualityTrendChart data={overview.trend} />
           </CardContent>
         </Card>
         <Card>
@@ -124,7 +139,7 @@ export default function QualityPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <QualityRadarChart />
+            <QualityRadarChart data={overview.radar} />
           </CardContent>
         </Card>
       </div>

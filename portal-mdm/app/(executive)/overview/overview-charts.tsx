@@ -12,7 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import { RECHARTS_THEME } from "@/components/charts/recharts-theme";
-import { QUALITY_BY_ENTITY, QUALITY_TREND } from "@/lib/mock/quality";
+import type { QualityByEntity, QualityTrendItem } from "@/lib/schemas/quality";
 
 const TOOLTIP_STYLE = {
   contentStyle: {
@@ -24,10 +24,10 @@ const TOOLTIP_STYLE = {
   },
 } as const;
 
-export function ExecutiveTrendChart() {
+export function ExecutiveTrendChart({ data }: { data: QualityTrendItem[] }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <AreaChart data={QUALITY_TREND} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="exec-grad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={RECHARTS_THEME.primary} stopOpacity={0.5} />
@@ -51,11 +51,11 @@ export function ExecutiveTrendChart() {
   );
 }
 
-export function ExecutiveByEntityChart() {
+export function ExecutiveByEntityChart({ data }: { data: QualityByEntity[] }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
       <BarChart
-        data={QUALITY_BY_ENTITY}
+        data={data}
         margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
       >
         <CartesianGrid stroke={RECHARTS_THEME.border} strokeDasharray="3 3" />

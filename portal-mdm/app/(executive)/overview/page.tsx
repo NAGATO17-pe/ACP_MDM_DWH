@@ -14,7 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { QUALITY_KPIS } from "@/lib/mock/quality";
+import { getExecutiveOverview } from "@/lib/api/quality";
+import type { ExecutiveOverview } from "@/lib/schemas/quality";
 import { formatNumber } from "@/lib/format";
 import {
   ExecutiveByEntityChart,
@@ -23,8 +24,40 @@ import {
 
 export const metadata: Metadata = { title: "Overview ejecutivo" };
 
-export default function OverviewPage() {
-  const k = QUALITY_KPIS;
+const EMPTY_OVERVIEW: ExecutiveOverview = {
+  kpis: {
+    completeness: 0,
+    validated: 0,
+    activeErrors: 0,
+    globalScore: 0,
+    deltas: { completeness: 0, validated: 0, activeErrors: 0, globalScore: 0 },
+  },
+  byEntity: [],
+  trend: [],
+  strategic: {
+    activeInitiatives: { total: 0, inPlan: 0, inExecution: 0, inClosure: 0 },
+    areaCoverage: { integrated: 0, total: 0 },
+    estimatedAnnualSavingsUsd: 0,
+    activeEntities: 0,
+    activeEntitiesDeltaPct: 0,
+    criticalAlerts: 0,
+    criticalAlertsDeltaPct: 0,
+  },
+};
+
+function formatUsdCompact(amount: number): string {
+  if (amount >= 1_000_000) return `USD ${(amount / 1_000_000).toFixed(1)} M`;
+  if (amount >= 1_000) return `USD ${(amount / 1_000).toFixed(0)} K`;
+  return `USD ${amount}`;
+}
+
+export default async function OverviewPage() {
+  const overview = await getExecutiveOverview().catch(() => EMPTY_OVERVIEW);
+  const k = overview.kpis;
+  const s = overview.strategic;
+  const coveragePct = s.areaCoverage.total > 0
+    ? Math.round((s.areaCoverage.integrated / s.areaCoverage.total) * 100)
+    : 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -53,15 +86,15 @@ export default function OverviewPage() {
         />
         <KpiCard
           label="Entidades activas"
-          value={formatNumber(2_847)}
-          delta={3.2}
+          value={formatNumber(s.activeEntities)}
+          delta={s.activeEntitiesDeltaPct}
           deltaLabel="vs. mes"
           icon={Database}
         />
         <KpiCard
           label="Alertas críticas"
-          value={4}
-          delta={-50}
+          value={s.criticalAlerts}
+          delta={s.criticalAlertsDeltaPct}
           deltaLabel="vs. semana"
           icon={ShieldAlert}
           tone="success"
@@ -77,7 +110,7 @@ export default function OverviewPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ExecutiveTrendChart />
+            <ExecutiveTrendChart data={overview.trend} />
           </CardContent>
         </Card>
         <Card>
@@ -88,7 +121,7 @@ export default function OverviewPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ExecutiveByEntityChart />
+            <ExecutiveByEntityChart data={overview.byEntity} />
           </CardContent>
         </Card>
       </div>
@@ -106,25 +139,31 @@ export default function OverviewPage() {
               <span className="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
                 Iniciativas activas
               </span>
-              <span className="tabular-nums text-3xl font-bold">12</span>
+              <span className="tabular-nums text-3xl font-bold">
+                {s.activeInitiatives.total}
+              </span>
               <span className="text-xs text-[var(--color-text-muted)]">
-                7 en plan, 4 en ejecución, 1 en cierre
+                {s.activeInitiatives.inPlan} en plan, {s.activeInitiatives.inExecution} en ejecución, {s.activeInitiatives.inClosure} en cierre
               </span>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
                 Cobertura de áreas
               </span>
-              <span className="tabular-nums text-3xl font-bold">9 / 14</span>
+              <span className="tabular-nums text-3xl font-bold">
+                {s.areaCoverage.integrated} / {s.areaCoverage.total}
+              </span>
               <span className="text-xs text-[var(--color-text-muted)]">
-                64% de áreas integradas al MDM
+                {coveragePct}% de áreas integradas al MDM
               </span>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
                 Ahorro estimado anual
               </span>
-              <span className="tabular-nums text-3xl font-bold">USD 1.2 M</span>
+              <span className="tabular-nums text-3xl font-bold">
+                {formatUsdCompact(s.estimatedAnnualSavingsUsd)}
+              </span>
               <span className="text-xs text-[var(--color-text-muted)]">
                 Por reducción de duplicidades y reprocesos
               </span>

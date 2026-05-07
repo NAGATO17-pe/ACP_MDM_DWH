@@ -27,7 +27,9 @@ import { KpiCard } from "@/components/charts/kpi-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useToast } from "@/hooks/use-toast";
 import { getWorkflows, approveWorkflow, rejectWorkflow } from "@/lib/api/workflows";
+import { getErrorMessage } from "@/lib/api/client";
 import type { WorkflowFromApi } from "@/lib/schemas/workflows";
+import { qk } from "@/lib/query-keys";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -101,18 +103,18 @@ export function WorkflowsClient() {
   const [reason, setReason] = React.useState("");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["workflows"],
+    queryKey: qk.workflows(),
     queryFn: () => getWorkflows(),
   });
 
   const approveMutation = useMutation({
     mutationFn: (id: string) => approveWorkflow(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workflows"] });
+      queryClient.invalidateQueries({ queryKey: qk.workflows() });
       toast({ title: "Workflow aprobado", variant: "success" });
     },
-    onError: () => {
-      toast({ title: "Error al aprobar", description: "Intenta nuevamente.", variant: "destructive" });
+    onError: (err) => {
+      toast({ title: "Error al aprobar", description: getErrorMessage(err), variant: "destructive" });
     },
   });
 
@@ -120,13 +122,13 @@ export function WorkflowsClient() {
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       rejectWorkflow(id, { reason }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workflows"] });
+      queryClient.invalidateQueries({ queryKey: qk.workflows() });
       toast({ title: "Workflow rechazado", variant: "default" });
       setRejectTarget(null);
       setReason("");
     },
-    onError: () => {
-      toast({ title: "Error al rechazar", description: "Intenta nuevamente.", variant: "destructive" });
+    onError: (err) => {
+      toast({ title: "Error al rechazar", description: getErrorMessage(err), variant: "destructive" });
     },
   });
 

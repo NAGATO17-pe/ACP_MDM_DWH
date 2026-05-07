@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EntityTable } from "@/components/entities/entity-table";
-import type { MdmEntityFromApi as MdmEntity } from "@/lib/schemas/entities";
+import type { MdmEntity } from "@/lib/schemas/entities";
 
 export function ExploreEntities({ data }: { data: MdmEntity[] }) {
   return (

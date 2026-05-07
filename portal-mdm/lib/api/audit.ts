@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, apiFetchBlob } from "./client";
 
 export interface AuditLog {
   id: string;
@@ -29,13 +29,6 @@ export function getAuditLogs(params: AuditListParams = {}): Promise<AuditListRes
   return apiFetch(`/api/v1/auditoria${query ? `?${query}` : ""}`);
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-export async function downloadAuditCsv(): Promise<Blob> {
-  const res = await fetch(`${API_URL}/api/v1/auditoria/export?format=csv`, {
-    headers: { accept: "text/csv" },
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`Error al exportar: ${res.statusText}`);
-  return res.blob();
+export function downloadAuditCsv(): Promise<Blob> {
+  return apiFetchBlob("/api/v1/auditoria/export?format=csv", { accept: "text/csv" });
 }

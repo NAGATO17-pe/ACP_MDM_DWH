@@ -19,10 +19,11 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import {
-  MODELS,
   MODEL_STATUS_LABEL,
   type ModelStatus,
-} from "@/lib/mock/models";
+} from "@/lib/schemas/models";
+import { getModelById } from "@/lib/api/models";
+import { ApiError } from "@/lib/api/client";
 import { formatDate, formatNumber } from "@/lib/format";
 import { ModelDetailCharts } from "./model-detail-charts";
 
@@ -38,7 +39,10 @@ interface PageProps {
 
 export default async function ModelDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const model = MODELS.find((m) => m.id === id);
+  const model = await getModelById(id).catch((err) => {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  });
   if (!model) notFound();
 
   return (

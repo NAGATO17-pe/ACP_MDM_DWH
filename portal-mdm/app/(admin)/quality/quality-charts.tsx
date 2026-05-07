@@ -17,11 +17,11 @@ import {
   YAxis,
 } from "recharts";
 import { RECHARTS_THEME } from "@/components/charts/recharts-theme";
-import {
-  QUALITY_BY_ENTITY,
-  QUALITY_RADAR,
-  QUALITY_TREND,
-} from "@/lib/mock/quality";
+import type {
+  QualityByEntity,
+  QualityRadarItem,
+  QualityTrendItem,
+} from "@/lib/schemas/quality";
 
 const TOOLTIP_STYLE = {
   contentStyle: {
@@ -34,11 +34,11 @@ const TOOLTIP_STYLE = {
   labelStyle: { color: RECHARTS_THEME.textMuted },
 } as const;
 
-export function QualityByEntityChart() {
+export function QualityByEntityChart({ data }: { data: QualityByEntity[] }) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart
-        data={QUALITY_BY_ENTITY}
+        data={data}
         margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
       >
         <CartesianGrid stroke={RECHARTS_THEME.border} strokeDasharray="3 3" />
@@ -63,11 +63,11 @@ export function QualityByEntityChart() {
   );
 }
 
-export function QualityTrendChart() {
+export function QualityTrendChart({ data }: { data: QualityTrendItem[] }) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <AreaChart
-        data={QUALITY_TREND}
+        data={data}
         margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
       >
         <defs>
@@ -106,10 +106,10 @@ export function QualityTrendChart() {
   );
 }
 
-export function QualityRadarChart() {
+export function QualityRadarChart({ data }: { data: QualityRadarItem[] }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <RadarChart data={QUALITY_RADAR}>
+      <RadarChart data={data}>
         <PolarGrid stroke={RECHARTS_THEME.border} />
         <PolarAngleAxis
           dataKey="metric"

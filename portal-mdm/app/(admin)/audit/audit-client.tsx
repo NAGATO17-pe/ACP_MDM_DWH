@@ -27,7 +27,9 @@ import {
 } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useToast } from "@/hooks/use-toast";
+import { useBlobDownload } from "@/hooks/use-blob-download";
 import { getAuditLogs, downloadAuditCsv } from "@/lib/api/audit";
+import { qk } from "@/lib/query-keys";
 import type { AuditLog } from "@/lib/api/audit";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -73,12 +75,13 @@ const PAGE_SIZE = 10;
 
 export function AuditClient() {
   const { toast } = useToast();
+  const downloadBlob = useBlobDownload();
   const [actionFilter, setActionFilter] = React.useState("");
   const [page, setPage] = React.useState(1);
   const [exporting, setExporting] = React.useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["audit", actionFilter, page],
+    queryKey: qk.audit(actionFilter, page),
     queryFn: () => getAuditLogs({ action: actionFilter || undefined, page, size: PAGE_SIZE }),
   });
 
@@ -95,12 +98,7 @@ export function AuditClient() {
     setExporting(true);
     try {
       const blob = await downloadAuditCsv();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `auditoria-${new Date().toISOString().slice(0, 10)}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, `auditoria-${new Date().toISOString().slice(0, 10)}.csv`);
       toast({ title: "CSV exportado correctamente", variant: "success" });
     } catch {
       toast({ title: "Error al exportar", description: "Intenta nuevamente.", variant: "destructive" });

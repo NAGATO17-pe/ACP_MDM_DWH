@@ -11,11 +11,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  MODELS,
   MODEL_STATUS_LABEL,
   type ModelStatus,
-} from "@/lib/mock/models";
+} from "@/lib/schemas/models";
+import { getModels } from "@/lib/api/models";
 import { formatDate, formatNumber } from "@/lib/format";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const STATUS_VARIANT: Record<
   ModelStatus,
@@ -28,7 +29,9 @@ const STATUS_VARIANT: Record<
 
 export const metadata: Metadata = { title: "Modelos predictivos" };
 
-export default function ModelsListPage() {
+export default async function ModelsListPage() {
+  const { data: MODELS } = await getModels().catch(() => ({ data: [], total: 0 }));
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -36,6 +39,13 @@ export default function ModelsListPage() {
         description="Catálogo de modelos analíticos disponibles para exploración y reporte."
       />
 
+      {MODELS.length === 0 ? (
+        <EmptyState
+          icon={FlaskConical}
+          title="Sin modelos disponibles"
+          description="Aún no hay modelos predictivos publicados en el catálogo."
+        />
+      ) : (
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {MODELS.map((model) => (
           <Link
@@ -110,6 +120,7 @@ export default function ModelsListPage() {
           </Link>
         ))}
       </div>
+      )}
     </div>
   );
 }
