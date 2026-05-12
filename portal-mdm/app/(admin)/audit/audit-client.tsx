@@ -26,6 +26,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useBlobDownload } from "@/hooks/use-blob-download";
 import { getAuditLogs, downloadAuditCsv } from "@/lib/api/audit";
@@ -76,13 +84,12 @@ const PAGE_SIZE = 10;
 export function AuditClient() {
   const { toast } = useToast();
   const downloadBlob = useBlobDownload();
-  const [actionFilter, setActionFilter] = React.useState("");
-  const [page, setPage] = React.useState(1);
+  const [filter, setFilter] = React.useState({ action: "", page: 1 });
   const [exporting, setExporting] = React.useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: qk.audit(actionFilter, page),
-    queryFn: () => getAuditLogs({ action: actionFilter || undefined, page, size: PAGE_SIZE }),
+    queryKey: qk.audit(filter.action, filter.page),
+    queryFn: () => getAuditLogs({ action: filter.action || undefined, page: filter.page, size: PAGE_SIZE }),
   });
 
   const events: AuditLog[] = data?.data ?? [];
@@ -90,8 +97,7 @@ export function AuditClient() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   function handleFilterChange(value: string) {
-    setActionFilter(value);
-    setPage(1);
+    setFilter({ action: value === "__all__" ? "" : value, page: 1 });
   }
 
   async function handleExport() {
@@ -129,24 +135,34 @@ export function AuditClient() {
                 {isLoading ? "Cargando…" : `${total} eventos registrados`}
               </CardDescription>
             </div>
-            <select
-              aria-label="Filtrar por acción"
-              value={actionFilter}
-              onChange={(e) => handleFilterChange(e.target.value)}
-              className={cn(
-                "h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)]",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)]",
-              )}
-            >
-              {ACTION_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+            <Select value={filter.action === "" ? "__all__" : filter.action} onValueChange={handleFilterChange}>
+              <SelectTrigger className="h-9 w-[200px]" aria-label="Filtrar por acción">
+                <SelectValue placeholder="Todas las acciones" />
+              </SelectTrigger>
+              <SelectContent>
+                {ACTION_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value === "" ? "__all__" : o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="py-8 text-center text-sm text-[var(--color-text-muted)]">Cargando…</p>
+            <div className="flex flex-col gap-4 py-2" aria-busy="true" aria-label="Cargando eventos">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
+                  <div className="flex flex-1 flex-col gap-2 pt-1">
+                    <Skeleton className="h-3 w-48" />
+                    <Skeleton className="h-3 w-64" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : events.length === 0 ? (
             <EmptyState
               icon={History}
@@ -196,14 +212,14 @@ export function AuditClient() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-4">
                   <span className="text-xs text-[var(--color-text-muted)] tabular-nums">
-                    Página {page} de {totalPages}
+                    Página {filter.page} de {totalPages}
                   </span>
                   <div className="flex items-center gap-1">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
+                      onClick={() => setFilter((f) => ({ ...f, page: Math.max(1, f.page - 1) }))}
+                      disabled={filter.page === 1}
                       aria-label="Página anterior"
                     >
                       <ChevronLeft aria-hidden className="h-4 w-4" />
@@ -212,8 +228,8 @@ export function AuditClient() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={page === totalPages}
+                      onClick={() => setFilter((f) => ({ ...f, page: Math.min(totalPages, f.page + 1) }))}
+                      disabled={filter.page === totalPages}
                       aria-label="Página siguiente"
                     >
                       Siguiente

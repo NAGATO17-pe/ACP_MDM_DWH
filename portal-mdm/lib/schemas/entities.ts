@@ -16,6 +16,16 @@ export const ENTITY_TYPE_LABEL: Record<EntityType, string> = {
   ubicacion: "Ubicaciones",
 };
 
+export const ENTITY_STATUS_VARIANT: Record<
+  EntityStatus,
+  "success" | "warning" | "destructive" | "default"
+> = {
+  validado: "success",
+  pendiente: "warning",
+  rechazado: "destructive",
+  borrador: "default",
+};
+
 export const mdmEntitySchema = z.object({
   id: z.string(),
   type: entityTypeSchema,

@@ -14,6 +14,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useBlobDownload } from "@/hooks/use-blob-download";
 import { downloadReport, type ReportFormat } from "@/lib/api/reports";
+import { getErrorMessage } from "@/lib/api/client";
 
 const REPORTS = [
   {
@@ -43,21 +44,26 @@ const REPORTS = [
 ];
 
 export function ReportsClient() {
-  const { toast } = useToast();
+  const { toast, update } = useToast();
   const downloadBlob = useBlobDownload();
   const [downloading, setDownloading] = React.useState<string | null>(null);
 
   async function handleDownload(id: string, format: "PDF" | "Excel") {
     const key = id + format;
     setDownloading(key);
+    const toastId = toast({ title: "Generando reporte…", duration: 60_000 });
     try {
-      toast({ title: "Generando reporte…" });
       const fmt: ReportFormat = format === "PDF" ? "pdf" : "csv";
       const blob = await downloadReport(id, fmt);
       downloadBlob(blob, `${id}.${fmt}`);
-      toast({ title: "Reporte descargado", variant: "success" });
-    } catch {
-      toast({ title: "Error al generar", description: "Intenta nuevamente.", variant: "destructive" });
+      update(toastId, { title: "Reporte descargado", variant: "success", duration: 4000 });
+    } catch (err) {
+      update(toastId, {
+        title: "Error al generar",
+        description: getErrorMessage(err),
+        variant: "destructive",
+        duration: 4000,
+      });
     } finally {
       setDownloading(null);
     }

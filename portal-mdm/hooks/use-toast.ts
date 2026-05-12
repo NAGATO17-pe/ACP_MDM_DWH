@@ -21,6 +21,7 @@ interface ToastInput {
 interface ToastContextValue {
   toasts: ToastItem[];
   toast: (input: ToastInput) => string;
+  update: (id: string, patch: Partial<ToastInput>) => void;
   dismiss: (id: string) => void;
 }
 
@@ -28,6 +29,7 @@ const DEFAULT_DURATION = 4000;
 
 type Action =
   | { type: "ADD"; item: ToastItem }
+  | { type: "UPDATE"; id: string; patch: Partial<ToastInput> }
   | { type: "DISMISS"; id: string }
   | { type: "REMOVE"; id: string };
 
@@ -35,6 +37,8 @@ function reducer(state: ToastItem[], action: Action): ToastItem[] {
   switch (action.type) {
     case "ADD":
       return [...state, action.item];
+    case "UPDATE":
+      return state.map((t) => (t.id === action.id ? { ...t, ...action.patch } : t));
     case "DISMISS":
       return state.map((t) => (t.id === action.id ? { ...t, open: false } : t));
     case "REMOVE":
@@ -61,7 +65,10 @@ export function useToastState(): ToastContextValue {
 
   const toast = useCallback(
     ({ title, description, variant = "default", duration = DEFAULT_DURATION }: ToastInput) => {
-      const id = crypto.randomUUID();
+      const id =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `toast-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       const item: ToastItem = { id, title, description, variant, duration, open: true };
       dispatch({ type: "ADD", item });
 
@@ -75,7 +82,21 @@ export function useToastState(): ToastContextValue {
     [dismiss],
   );
 
-  return { toasts, toast, dismiss };
+  const update = useCallback(
+    (id: string, patch: Partial<ToastInput>) => {
+      dispatch({ type: "UPDATE", id, patch });
+
+      // Reset auto-dismiss timer if duration changed (or simply on update)
+      const existing = timersRef.current.get(id);
+      if (existing) clearTimeout(existing);
+      const newDuration = patch.duration ?? DEFAULT_DURATION;
+      const timer = setTimeout(() => dismiss(id), newDuration);
+      timersRef.current.set(id, timer);
+    },
+    [dismiss],
+  );
+
+  return { toasts, toast, update, dismiss };
 }
 
 export function useToast(): ToastContextValue {

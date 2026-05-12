@@ -24,7 +24,7 @@ interface ApiOptions extends Omit<RequestInit, "body"> {
 }
 
 interface BlobOptions extends Omit<ApiOptions, "body"> {
-  /** Expected content-type (sent as Accept header). Defaults to */* */
+  /** Expected content-type (sent as Accept header). Defaults to any. */
   accept?: string;
 }
 
