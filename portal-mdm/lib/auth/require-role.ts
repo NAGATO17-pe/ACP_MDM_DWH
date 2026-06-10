@@ -8,3 +8,10 @@ export async function requireRole(expected: Role): Promise<SessionPayload> {
   if (session.role !== expected) redirect(ROLE_HOME[session.role]);
   return session;
 }
+
+export async function requireAnyRole(required: readonly Role[]): Promise<SessionPayload> {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  if (!required.includes(session.role)) redirect(ROLE_HOME[session.role]);
+  return session;
+}
