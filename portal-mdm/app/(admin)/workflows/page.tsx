@@ -4,14 +4,15 @@ import { PageHeader } from "@/components/ui/page-header";
 import { HomologationClient } from "./homologation-client";
 import { getPendingHomologations, getReinjectionStats } from "@/lib/api/homologation";
 import { JWT_COOKIE_NAME } from "@/lib/auth/session";
+import { getSession } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Workflows y Homologación" };
 
 export default async function WorkflowsPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get(JWT_COOKIE_NAME)?.value;
+  const session = await getSession();
 
-  // Carga paralela de datos iniciales
   const [pendingHomologations, reinjectionData] = await Promise.all([
     getPendingHomologations(token),
     getReinjectionStats(token),
@@ -26,9 +27,10 @@ export default async function WorkflowsPage() {
         description="Ajusta y valida registros rechazados para integrarlos al Data Warehouse."
       />
 
-      <HomologationClient 
-        initialData={pendingHomologations} 
+      <HomologationClient
+        initialData={pendingHomologations}
         reinyeccionCount={reinyeccionCount}
+        isReadOnly={session?.role === "analyst"}
       />
     </div>
   );
