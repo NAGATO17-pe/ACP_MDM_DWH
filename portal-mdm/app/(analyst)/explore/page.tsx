@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Compass, Database, FileText, FlaskConical } from "lucide-react";
+import { FileText, FlaskConical } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import {
@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { KpiCard } from "@/components/charts/kpi-card";
+import { ExploreKpis } from "./explore-kpis";
 
 const SHORTCUTS = [
   {
@@ -36,24 +36,7 @@ export default function ExplorePage() {
         description="Punto de entrada para análisis y descubrimiento sobre el data warehouse."
       />
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <KpiCard label="Datasets disponibles" value={28} icon={Database} />
-        <KpiCard
-          label="Modelos en producción"
-          value={3}
-          delta={50}
-          deltaLabel="vs. trimestre"
-          icon={FlaskConical}
-          tone="success"
-        />
-        <KpiCard
-          label="Consultas (últimos 7 días)"
-          value="1,284"
-          delta={12}
-          deltaLabel="vs. semana"
-          icon={Compass}
-        />
-      </section>
+      <ExploreKpis />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {SHORTCUTS.map((s) => {
