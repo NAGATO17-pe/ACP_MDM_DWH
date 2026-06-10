@@ -178,6 +178,15 @@ export const ROUTES = {
     roles: [ADMIN],
     section: "gobierno",
   },
+  audit: {
+    path: "/audit",
+    label: "Auditoría ETL",
+    icon: History,
+    roles: [ADMIN],
+    section: "gobierno",
+    description: "Auditoría de ejecuciones ETL.",
+    hideFromNav: false,
+  },
 } as const satisfies Record<string, RouteDef>;
 
 export type RouteKey = keyof typeof ROUTES;
