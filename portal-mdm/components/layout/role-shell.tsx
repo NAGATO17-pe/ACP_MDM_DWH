@@ -14,10 +14,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface NavItem {
+export interface NavItem {
   href: string;
   label: string;
   icon: React.ReactNode;
+}
+
+export interface NavGroup {
+  title?: string;
+  items: NavItem[];
 }
 
 interface RoleShellProps {

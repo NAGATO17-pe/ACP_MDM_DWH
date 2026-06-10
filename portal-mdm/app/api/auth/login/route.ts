@@ -7,7 +7,33 @@ import {
 } from "@/lib/schemas/auth";
 import { COOKIE_NAME, cookieOptions } from "@/lib/auth/cookie-config";
 
+// Simple in-memory rate limiter (single-process; replace with Redis for multi-instance)
+const _loginAttempts = new Map<string, { count: number; resetAt: number }>();
+const _RL_WINDOW_MS = 15 * 60_000;
+const _RL_MAX = 10;
+
+function checkLoginRate(ip: string): boolean {
+  const now = Date.now();
+  const rec = _loginAttempts.get(ip);
+  if (!rec || now > rec.resetAt) {
+    _loginAttempts.set(ip, { count: 1, resetAt: now + _RL_WINDOW_MS });
+    return true;
+  }
+  if (rec.count >= _RL_MAX) return false;
+  rec.count++;
+  return true;
+}
+
 export async function POST(request: Request) {
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (!checkLoginRate(ip)) {
+    return NextResponse.json(
+      { detail: "Demasiados intentos de inicio de sesión. Espere 15 minutos." },
+      { status: 429 },
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();

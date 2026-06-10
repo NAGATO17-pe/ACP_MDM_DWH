@@ -131,7 +131,7 @@ export function EtlAuditClient({ initialLogs }: EtlAuditClientProps) {
         columns={columns} 
         data={logs} 
         searchPlaceholder="Filtrar por tabla..."
-        searchColumn="tabla_destino"
+        searchKey="tabla_destino"
       />
     </div>
   );

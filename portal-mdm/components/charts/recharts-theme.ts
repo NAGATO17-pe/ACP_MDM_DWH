@@ -9,6 +9,7 @@ export const RECHARTS_THEME = {
   warning: "#D97706",
   destructive: "#DC2626",
   info: "#0284C7",
+  text: "#E2E8F0",
   textMuted: "#94A3B8",
   border: "#1E3A5F",
   surface: "#1E293B",

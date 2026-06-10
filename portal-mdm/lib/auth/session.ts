@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { jwtVerify, decodeJwt } from "jose";
-import { isValidRole, type Role } from "./rbac";
+import type { Role } from "./rbac";
+import { parseRole } from "./roles";
 
 export const JWT_COOKIE_NAME = process.env.JWT_COOKIE_NAME ?? "mdm_session";
 
@@ -15,18 +16,22 @@ export interface SessionPayload {
 /**
  * Server-side session reader. Validates the JWT signature when
  * `JWT_PUBLIC_SECRET` is configured; otherwise decodes without verifying
- * (intended for local dev against a trusted FastAPI backend).
+ * (dev only — set ALLOW_UNSIGNED_JWT=1 to allow this in non-production).
  */
 export async function getSession(): Promise<SessionPayload | null> {
-  if (
-    process.env.NODE_ENV === "production" &&
-    !process.env.JWT_PUBLIC_SECRET
-  ) {
-    console.warn(
-      "WARNING: JWT_PUBLIC_SECRET is not set in production. " +
-        "JWTs are being accepted without signature verification. " +
-        "This is a major security risk.",
-    );
+  const secret = process.env.JWT_PUBLIC_SECRET;
+
+  if (!secret) {
+    if (
+      process.env.NODE_ENV === "production" &&
+      !process.env.ALLOW_UNSIGNED_JWT
+    ) {
+      // Fail-closed: never accept unsigned JWTs in production.
+      throw new Error(
+        "JWT_PUBLIC_SECRET must be set in production. " +
+          "Set ALLOW_UNSIGNED_JWT=1 only for trusted dev environments.",
+      );
+    }
   }
 
   const store = await cookies();
@@ -34,38 +39,36 @@ export async function getSession(): Promise<SessionPayload | null> {
   if (!token) return null;
 
   try {
-    const secret = process.env.JWT_PUBLIC_SECRET;
     const claims = secret
       ? (
-          await jwtVerify(
-            token,
-            new TextEncoder().encode(secret),
-            // Algorithms accepted from FastAPI backend
-            { algorithms: ["HS256", "HS512"] },
-          )
+          await jwtVerify(token, new TextEncoder().encode(secret), {
+            algorithms: ["HS256", "HS512"],
+          })
         ).payload
       : decodeJwt(token);
 
-    // Debug logging for claims
-    console.log("JWT Claims received:", claims);
+    // parseRole is fail-closed: returns null for unknown/missing roles.
+    const role = parseRole(claims as Record<string, unknown>);
+    if (!role) return null;
 
-    let role = claims.role || claims.rol;
-    if (!isValidRole(role)) {
-      console.warn(`Role '${role}' is not valid or missing in JWT. Defaulting to 'admin' for now.`);
-      role = "admin";
-    }
-
-    const name = typeof claims.display === "string" ? claims.display : (typeof claims.name === "string" ? claims.name : undefined);
+    const name =
+      typeof claims.display === "string"
+        ? claims.display
+        : typeof claims.name === "string"
+          ? claims.name
+          : undefined;
 
     return {
       sub: String(claims.sub ?? ""),
-      role: role as Role,
+      role,
       name,
-      username: typeof claims.username === "string" ? claims.username : String(claims.sub ?? ""),
+      username:
+        typeof claims.username === "string"
+          ? claims.username
+          : String(claims.sub ?? ""),
       exp: typeof claims.exp === "number" ? claims.exp : undefined,
     };
-  } catch (err) {
-    console.error("Error decoding session:", err);
+  } catch {
     return null;
   }
 }

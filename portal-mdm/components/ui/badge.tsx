@@ -18,6 +18,8 @@ const badgeVariants = cva(
         info: "bg-[color-mix(in_oklab,var(--color-info)_18%,transparent)] text-[var(--color-info)] border-[color-mix(in_oklab,var(--color-info)_30%,transparent)]",
         primary:
           "bg-[color-mix(in_oklab,var(--color-primary)_18%,transparent)] text-[var(--color-primary)] border-[color-mix(in_oklab,var(--color-primary)_30%,transparent)]",
+        outline:
+          "bg-transparent text-[var(--color-text)] border-[var(--color-border)]",
       },
     },
     defaultVariants: { variant: "default" },

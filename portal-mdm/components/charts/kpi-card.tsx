@@ -10,7 +10,7 @@ interface KpiCardProps {
   delta?: number;
   deltaLabel?: string;
   icon?: LucideIcon;
-  tone?: "default" | "success" | "warning" | "destructive";
+  tone?: "default" | "success" | "warning" | "destructive" | "info";
 }
 
 const TONES: Record<NonNullable<KpiCardProps["tone"]>, string> = {
@@ -18,6 +18,7 @@ const TONES: Record<NonNullable<KpiCardProps["tone"]>, string> = {
   success: "text-[var(--color-success)]",
   warning: "text-[var(--color-warning)]",
   destructive: "text-[var(--color-destructive)]",
+  info: "text-[var(--color-info)]",
 };
 
 export function KpiCard({
