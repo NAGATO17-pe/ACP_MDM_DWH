@@ -185,7 +185,6 @@ export const ROUTES = {
     roles: [ADMIN],
     section: "gobierno",
     description: "Auditoría de ejecuciones ETL.",
-    hideFromNav: false,
   },
 } as const satisfies Record<string, RouteDef>;
 
@@ -197,11 +196,6 @@ export type RouteKey = keyof typeof ROUTES;
 
 /** Lista plana — útil para iterar. */
 export const ROUTE_LIST: ReadonlyArray<RouteDef> = Object.values(ROUTES);
-
-/** Path prefixes permitidos por rol. Consumido por rbac.isRoleAllowed. */
-export function rolePrefixes(role: Role): string[] {
-  return ROUTE_LIST.filter((r) => r.roles.includes(role)).map((r) => r.path);
-}
 
 /** Definición pivot — title del grupo + orden. */
 const SECTION_LABEL: Record<NavSection, string> = {

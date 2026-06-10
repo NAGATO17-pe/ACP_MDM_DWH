@@ -3,9 +3,9 @@ import { decodeJwt } from "jose";
 import {
   isPublicPath,
   isRoleAllowed,
-  isValidRole,
   ROLE_HOME,
 } from "@/lib/auth/rbac";
+import { parseRole } from "@/lib/auth/roles";
 
 const COOKIE = process.env.JWT_COOKIE_NAME ?? "mdm_session";
 
@@ -23,13 +23,13 @@ export function proxy(request: NextRequest) {
   const token = request.cookies.get(COOKIE)?.value;
   if (!token) return redirectToLogin(request);
 
-  let role: unknown;
+  let resolvedRole: ReturnType<typeof parseRole>;
   let exp: number | undefined;
   try {
     const claims = decodeJwt(token);
-    role = claims.role || claims.rol;
-    if (!isValidRole(role)) {
-      role = "admin";
+    resolvedRole = parseRole(claims as Record<string, unknown>);
+    if (resolvedRole === null) {
+      return redirectToLogin(request);
     }
     exp = typeof claims.exp === "number" ? claims.exp : undefined;
   } catch {
@@ -38,9 +38,9 @@ export function proxy(request: NextRequest) {
 
   if (exp && exp * 1000 < Date.now()) return redirectToLogin(request);
 
-  const currentRole = role as keyof typeof ROLE_HOME;
+  const currentRole = resolvedRole;
 
-  if (pathname === "/" || !isRoleAllowed(currentRole as any, pathname)) {
+  if (pathname === "/" || !isRoleAllowed(currentRole, pathname)) {
     return NextResponse.redirect(new URL(ROLE_HOME[currentRole], request.url));
   }
 
