@@ -14,26 +14,26 @@ const REPORTS = [
   {
     id: "RPT-001",
     title: "Reporte mensual de calidad MDM",
-    description: "PDF con KPIs de completitud, validez y errores activos.",
-    formats: ["PDF", "Excel"],
+    description: "Registros de cuarentena con estado, motivo y archivo origen.",
+    formats: ["CSV"],
   },
   {
     id: "RPT-002",
     title: "Performance de modelos predictivos",
     description: "Métricas comparadas (AUC, F1) entre modelos en producción.",
-    formats: ["PDF"],
+    formats: ["CSV"],
   },
   {
     id: "RPT-003",
     title: "Top 100 entidades con más cambios",
     description: "Listado priorizado para revisión del equipo de gobierno.",
-    formats: ["Excel"],
+    formats: ["CSV"],
   },
   {
     id: "RPT-004",
     title: "Auditoría de aprobaciones",
-    description: "Detalle de workflows aprobados / rechazados por usuario.",
-    formats: ["PDF", "Excel"],
+    description: "Detalle de cargas ETL con estado, duración y rechazos.",
+    formats: ["CSV"],
   },
 ];
 
@@ -68,9 +68,11 @@ export default function ReportsPage() {
               <span className="text-xs text-[var(--color-text-muted)]">
                 Formatos: {r.formats.join(" · ")}
               </span>
-              <Button variant="outline" size="sm">
-                <Download aria-hidden className="h-4 w-4" />
-                Descargar
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/api/cc/reports/${r.id}`} download>
+                  <Download aria-hidden className="h-4 w-4" />
+                  Descargar
+                </a>
               </Button>
             </CardContent>
           </Card>
