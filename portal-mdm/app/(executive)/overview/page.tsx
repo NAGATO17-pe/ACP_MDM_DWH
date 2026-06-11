@@ -1,12 +1,5 @@
 import type { Metadata } from "next";
-import {
-  Award,
-  CheckCircle2,
-  Database,
-  ShieldAlert,
-} from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { KpiCard } from "@/components/charts/kpi-card";
 import {
   Card,
   CardContent,
@@ -14,18 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { QUALITY_KPIS } from "@/lib/mock/quality";
-import { formatNumber } from "@/lib/format";
 import {
   ExecutiveByEntityChart,
   ExecutiveTrendChart,
 } from "./overview-charts";
+import { OverviewKpis } from "./overview-kpis";
 
 export const metadata: Metadata = { title: "Overview ejecutivo" };
 
 export default function OverviewPage() {
-  const k = QUALITY_KPIS;
-
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -33,40 +23,7 @@ export default function OverviewPage() {
         description="Indicadores estratégicos de la plataforma de datos maestros."
       />
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          label="Score global MDM"
-          value={k.globalScore}
-          unit="/100"
-          delta={k.deltas.globalScore}
-          deltaLabel="vs. mes"
-          icon={Award}
-          tone="success"
-        />
-        <KpiCard
-          label="Entidades validadas"
-          value={`${k.validated.toFixed(0)}%`}
-          delta={k.deltas.validated}
-          deltaLabel="vs. mes"
-          icon={CheckCircle2}
-          tone="success"
-        />
-        <KpiCard
-          label="Entidades activas"
-          value={formatNumber(2_847)}
-          delta={3.2}
-          deltaLabel="vs. mes"
-          icon={Database}
-        />
-        <KpiCard
-          label="Alertas críticas"
-          value={4}
-          delta={-50}
-          deltaLabel="vs. semana"
-          icon={ShieldAlert}
-          tone="success"
-        />
-      </section>
+      <OverviewKpis />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
