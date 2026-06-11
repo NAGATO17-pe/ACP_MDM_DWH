@@ -201,7 +201,8 @@ Un usuario admin (40) pasa `require_rol("analista_mdm")` porque 40 ≥ 20.
 |---|---|---|---|
 | `Invalid column name 'Clave'` | `repo_proyecciones.py` | Renombrar a `Nombre_Parametro` | 045e176 |
 | `Acceso denegado [usuario=admin2]` | `rutas_proyecciones.py` | `require_rol("analista")` → `require_rol("analista_mdm")` | 045e176 |
-| `Invalid column name 'Cantidad_Plantas'` | `repo_proyecciones.py` | `SUM(f.Cantidad_Plantas)` → `SUM(f.Cantidad)` | 54cd592 |
+| `Invalid column name 'Cantidad_Plantas'` (FastAPI) | `repo_proyecciones.py` | `SUM(f.Cantidad_Plantas)` → `SUM(f.Cantidad)` | 54cd592 |
+| `Invalid column name 'Cantidad_Plantas'` (Streamlit) | `acp_mdm_portal/utils/motor_proyecciones.py:446` | `SUM(f.Cantidad_Plantas)` → `SUM(f.Cantidad)` | (2026-06-11) |
 | Admin redirigido de rutas analyst | `app/(analyst)/layout.tsx` | `requireRole("analyst")` → `requireAnyRole(["analyst","admin"])` | 41993f0 |
 | `/dashboard` "Página no encontrada" | `login-form.tsx` | `router.replace+refresh` → `window.location.href` | (2026-06-11) |
 | Analysts accedían a páginas admin-only | dashboard/dwh/bitacora/configuracion/audit page.tsx | `requireRole("admin")` en cada página | (2026-06-11) |
