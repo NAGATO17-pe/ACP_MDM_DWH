@@ -7,10 +7,6 @@ import {
   BarChart,
   CartesianGrid,
   Legend,
-  PolarAngleAxis,
-  PolarGrid,
-  Radar,
-  RadarChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -18,10 +14,13 @@ import {
 } from "recharts";
 import { RECHARTS_THEME } from "@/components/charts/recharts-theme";
 import {
-  QUALITY_BY_ENTITY,
-  QUALITY_RADAR,
-  QUALITY_TREND,
-} from "@/lib/mock/quality";
+  useQualityTrend,
+  useQualityByTable,
+  useQualityKpis,
+} from "@/hooks/use-control-center";
+import { Skeleton } from "@/components/ui/skeleton";
+import { KpiCard } from "@/components/charts/kpi-card";
+import { FileSearch2, Target } from "lucide-react";
 
 const TOOLTIP_STYLE = {
   contentStyle: {
@@ -34,28 +33,59 @@ const TOOLTIP_STYLE = {
   labelStyle: { color: RECHARTS_THEME.textMuted },
 } as const;
 
+/* -------------------------------------------------------------------------- */
+/* QualityByEntityChart — stacked bar by table from cuarentena               */
+/* -------------------------------------------------------------------------- */
+
 export function QualityByEntityChart() {
+  const { data, isLoading, isError } = useQualityByTable();
+
+  if (isLoading && !data) {
+    return <Skeleton className="h-[260px] w-full rounded-md" />;
+  }
+  if (isError) {
+    return (
+      <p className="text-sm text-[var(--color-text-muted)] py-12 text-center">
+        Error al cargar datos de calidad por tabla
+      </p>
+    );
+  }
+  if (!data?.length) {
+    return (
+      <p className="text-sm text-[var(--color-text-muted)] py-12 text-center">
+        Sin registros de cuarentena por tabla
+      </p>
+    );
+  }
+
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart
-        data={QUALITY_BY_ENTITY}
+        data={data}
         margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
       >
         <CartesianGrid stroke={RECHARTS_THEME.border} strokeDasharray="3 3" />
-        <XAxis dataKey="entity" stroke={RECHARTS_THEME.textMuted} fontSize={12} />
-        <YAxis stroke={RECHARTS_THEME.textMuted} fontSize={12} domain={[0, 100]} />
+        <XAxis dataKey="tabla" stroke={RECHARTS_THEME.textMuted} fontSize={12} />
+        <YAxis stroke={RECHARTS_THEME.textMuted} fontSize={12} />
         <Tooltip {...TOOLTIP_STYLE} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
         <Bar
-          dataKey="target"
-          name="Target"
-          fill={RECHARTS_THEME.border}
-          radius={[4, 4, 0, 0]}
+          dataKey="pendientes"
+          name="Pendientes"
+          stackId="a"
+          fill={RECHARTS_THEME.warning}
         />
         <Bar
-          dataKey="actual"
-          name="Actual"
-          fill={RECHARTS_THEME.primary}
+          dataKey="resueltos"
+          name="Resueltos"
+          stackId="a"
+          fill={RECHARTS_THEME.success}
+        />
+        <Bar
+          dataKey="descartados"
+          name="Descartados"
+          stackId="a"
+          fill={RECHARTS_THEME.border}
           radius={[4, 4, 0, 0]}
         />
       </BarChart>
@@ -63,21 +93,61 @@ export function QualityByEntityChart() {
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* QualityTrendChart — area chart from bitacora                               */
+/* -------------------------------------------------------------------------- */
+
 export function QualityTrendChart() {
+  const { data, isLoading, isError } = useQualityTrend(30);
+
+  if (isLoading && !data) {
+    return <Skeleton className="h-[260px] w-full rounded-md" />;
+  }
+  if (isError) {
+    return (
+      <p className="text-sm text-[var(--color-text-muted)] py-12 text-center">
+        Error al cargar tendencia de calidad
+      </p>
+    );
+  }
+  if (!data?.length) {
+    return (
+      <p className="text-sm text-[var(--color-text-muted)] py-12 text-center">
+        Sin datos de bitácora en el período
+      </p>
+    );
+  }
+
   return (
     <ResponsiveContainer width="100%" height={260}>
       <AreaChart
-        data={QUALITY_TREND}
+        data={data}
         margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
       >
         <defs>
-          <linearGradient id="errors-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={RECHARTS_THEME.destructive} stopOpacity={0.4} />
-            <stop offset="100%" stopColor={RECHARTS_THEME.destructive} stopOpacity={0} />
+          <linearGradient id="rechazadas-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="0%"
+              stopColor={RECHARTS_THEME.destructive}
+              stopOpacity={0.4}
+            />
+            <stop
+              offset="100%"
+              stopColor={RECHARTS_THEME.destructive}
+              stopOpacity={0}
+            />
           </linearGradient>
-          <linearGradient id="validated-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={RECHARTS_THEME.success} stopOpacity={0.4} />
-            <stop offset="100%" stopColor={RECHARTS_THEME.success} stopOpacity={0} />
+          <linearGradient id="insertadas-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="0%"
+              stopColor={RECHARTS_THEME.success}
+              stopOpacity={0.4}
+            />
+            <stop
+              offset="100%"
+              stopColor={RECHARTS_THEME.success}
+              stopOpacity={0}
+            />
           </linearGradient>
         </defs>
         <CartesianGrid stroke={RECHARTS_THEME.border} strokeDasharray="3 3" />
@@ -87,18 +157,18 @@ export function QualityTrendChart() {
         <Legend wrapperStyle={{ fontSize: 12 }} />
         <Area
           type="monotone"
-          dataKey="errors"
-          name="Errores"
+          dataKey="rechazadas"
+          name="Rechazadas"
           stroke={RECHARTS_THEME.destructive}
-          fill="url(#errors-grad)"
+          fill="url(#rechazadas-grad)"
           strokeWidth={2}
         />
         <Area
           type="monotone"
-          dataKey="validated"
-          name="Validados"
+          dataKey="insertadas"
+          name="Insertadas"
           stroke={RECHARTS_THEME.success}
-          fill="url(#validated-grad)"
+          fill="url(#insertadas-grad)"
           strokeWidth={2}
         />
       </AreaChart>
@@ -106,50 +176,9 @@ export function QualityTrendChart() {
   );
 }
 
-export function QualityRadarChart() {
-  return (
-    <ResponsiveContainer width="100%" height={280}>
-      <RadarChart data={QUALITY_RADAR}>
-        <PolarGrid stroke={RECHARTS_THEME.border} />
-        <PolarAngleAxis
-          dataKey="metric"
-          stroke={RECHARTS_THEME.textMuted}
-          fontSize={11}
-        />
-        <Tooltip {...TOOLTIP_STYLE} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Radar
-          name="Clientes"
-          dataKey="Clientes"
-          stroke={RECHARTS_THEME.primary}
-          fill={RECHARTS_THEME.primary}
-          fillOpacity={0.25}
-        />
-        <Radar
-          name="Productos"
-          dataKey="Productos"
-          stroke={RECHARTS_THEME.success}
-          fill={RECHARTS_THEME.success}
-          fillOpacity={0.2}
-        />
-        <Radar
-          name="Proveedores"
-          dataKey="Proveedores"
-          stroke={RECHARTS_THEME.warning}
-          fill={RECHARTS_THEME.warning}
-          fillOpacity={0.2}
-        />
-        <Radar
-          name="Ubicaciones"
-          dataKey="Ubicaciones"
-          stroke={RECHARTS_THEME.info}
-          fill={RECHARTS_THEME.info}
-          fillOpacity={0.2}
-        />
-      </RadarChart>
-    </ResponsiveContainer>
-  );
-}
+/* -------------------------------------------------------------------------- */
+/* QualityGauge — score bar (score prop from parent)                          */
+/* -------------------------------------------------------------------------- */
 
 export function QualityGauge({ score }: { score: number }) {
   return (
@@ -176,5 +205,79 @@ export function QualityGauge({ score }: { score: number }) {
         />
       </BarChart>
     </ResponsiveContainer>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* QualityGaugeWithData — client island: fetches resolutionRate via hook      */
+/* -------------------------------------------------------------------------- */
+
+export function QualityGaugeWithData() {
+  const { data, isLoading } = useQualityKpis();
+
+  const score =
+    data && data.total > 0
+      ? Math.round(((data.resueltos + data.descartados) / data.total) * 100)
+      : data
+        ? 100
+        : 0;
+
+  if (isLoading && !data) {
+    return <Skeleton className="h-[220px] w-full rounded-md" />;
+  }
+
+  return (
+    <>
+      <QualityGauge score={score} />
+      <div className="mt-4 text-center">
+        <span className="text-4xl font-bold text-[var(--color-primary)]">
+          {score}
+        </span>
+        <span className="ml-1 text-sm text-[var(--color-text-muted)]">/ 100</span>
+      </div>
+    </>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* QualityKpiSection — client island: 2 KPI cards from useQualityKpis        */
+/* -------------------------------------------------------------------------- */
+
+export function QualityKpiSection() {
+  const { data, isLoading } = useQualityKpis();
+
+  const score =
+    data && data.total > 0
+      ? Math.round(((data.resueltos + data.descartados) / data.total) * 100)
+      : data
+        ? 100
+        : 0;
+
+  if (isLoading && !data) {
+    return (
+      <>
+        <Skeleton className="h-[120px] rounded-md" />
+        <Skeleton className="h-[120px] rounded-md" />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <KpiCard
+        label="Tasa de resolución"
+        value={(data?.resolutionRate ?? score).toFixed(1)}
+        unit="%"
+        icon={Target}
+        tone={score >= 80 ? "success" : score >= 50 ? "warning" : "destructive"}
+      />
+      <KpiCard
+        label="Score global"
+        value={score}
+        unit="/100"
+        icon={FileSearch2}
+        tone={score >= 80 ? "success" : score >= 50 ? "warning" : "destructive"}
+      />
+    </>
   );
 }

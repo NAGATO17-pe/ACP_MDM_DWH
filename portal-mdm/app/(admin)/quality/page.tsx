@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { 
-  BarChart3, 
-  CheckCircle2, 
-  FileSearch2, 
-  LayoutDashboard, 
-  ShieldAlert, 
-  Target,
-  Database
+import {
+  Database,
+  LayoutDashboard,
+  ShieldAlert,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { KpiCard } from "@/components/charts/kpi-card";
@@ -20,12 +16,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { QUALITY_KPIS } from "@/lib/mock/quality";
-import { formatNumber } from "@/lib/format";
 import {
   QualityByEntityChart,
-  QualityGauge,
-  QualityRadarChart,
+  QualityGaugeWithData,
+  QualityKpiSection,
   QualityTrendChart,
 } from "./quality-charts";
 import { QuarantineTable } from "./quarantine-table";
@@ -40,8 +34,7 @@ export default async function QualityPage() {
 
   // Real data from FastAPI
   const { datos: quarantineData, total: totalQuarantine } = await getQuarantineRecords(1, 100, token);
-  
-  const k = QUALITY_KPIS;
+
   const pendingQuarantine = quarantineData.filter(d => d.estado.toUpperCase() === "PENDIENTE").length;
 
   return (
@@ -56,14 +49,6 @@ export default async function QualityPage() {
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <KpiCard
-          label="Completitud global"
-          value={k.completeness.toFixed(1)}
-          unit="%"
-          delta={k.deltas.completeness}
-          icon={Target}
-          tone="success"
-        />
-        <KpiCard
           label="En Cuarentena"
           value={totalQuarantine}
           delta={totalQuarantine > 0 ? 5 : 0}
@@ -77,12 +62,8 @@ export default async function QualityPage() {
           icon={Database}
           tone={pendingQuarantine > 0 ? "warning" : "success"}
         />
-        <KpiCard
-          label="Score global"
-          value={k.globalScore}
-          unit="/100"
-          icon={FileSearch2}
-        />
+        {/* KPI cards con datos reales: resolutionRate + score global */}
+        <QualityKpiSection />
       </section>
 
       <Tabs defaultValue="dashboard" className="w-full">
@@ -101,9 +82,9 @@ export default async function QualityPage() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Calidad por entidad</CardTitle>
+                <CardTitle>Calidad por tabla</CardTitle>
                 <CardDescription>
-                  Comparativa de cumplimiento de calidad por tipo de entidad maestra.
+                  Comparativa de cuarentena por tabla origen (pendientes / resueltos / descartados).
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -118,31 +99,22 @@ export default async function QualityPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col items-center">
-                <QualityGauge score={k.globalScore} />
-                <div className="mt-4 text-center">
-                  <span className="text-4xl font-bold text-[var(--color-primary)]">{k.globalScore}</span>
-                  <span className="ml-1 text-sm text-[var(--color-text-muted)]">/ 100</span>
-                </div>
+                <QualityGaugeWithData />
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle>Evolución de Errores</CardTitle>
-                <CardContent>
-                  <QualityTrendChart />
-                </CardContent>
+                <CardDescription>
+                  Filas insertadas vs. rechazadas por día en la bitácora de carga.
+                </CardDescription>
               </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Análisis Multidimensional</CardTitle>
-                <CardContent>
-                  <QualityRadarChart />
-                </CardContent>
-              </CardHeader>
+              <CardContent>
+                <QualityTrendChart />
+              </CardContent>
             </Card>
           </div>
         </TabsContent>
