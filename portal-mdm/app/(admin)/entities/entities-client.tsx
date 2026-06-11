@@ -2,167 +2,208 @@
 
 import * as React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from "@/components/data-table/data-table";
 import {
-  ENTITY_TYPE_LABEL,
-  type EntityStatus,
-  type EntityType,
-  type MdmEntity,
-} from "@/lib/mock/entities";
-import { formatDate, formatPercent } from "@/lib/format";
-import { cn } from "@/lib/utils";
+  useVariedadesDim,
+  useGeografia,
+  usePersonal,
+} from "@/hooks/use-catalogos";
+import type {
+  Geografia,
+  Personal,
+  VariedadDim,
+} from "@/lib/schemas/catalogos";
+import { formatDate } from "@/lib/format";
 
-const STATUS_VARIANT: Record<
-  EntityStatus,
-  "success" | "warning" | "destructive" | "default"
-> = {
-  validado: "success",
-  pendiente: "warning",
-  rechazado: "destructive",
-  borrador: "default",
-};
+const PAGE = { pagina: 1, tamano: 200 };
 
-const TABS: Array<{ value: EntityType | "all"; label: string }> = [
-  { value: "all", label: "Todas" },
-  { value: "cliente", label: ENTITY_TYPE_LABEL.cliente },
-  { value: "producto", label: ENTITY_TYPE_LABEL.producto },
-  { value: "proveedor", label: ENTITY_TYPE_LABEL.proveedor },
-  { value: "ubicacion", label: ENTITY_TYPE_LABEL.ubicacion },
-];
-
-const COLUMNS: ColumnDef<MdmEntity>[] = [
+const VARIEDAD_COLUMNS: ColumnDef<VariedadDim>[] = [
   {
-    accessorKey: "code",
-    header: "Código",
+    accessorKey: "idVariedad",
+    header: "ID",
     cell: ({ row }) => (
       <span className="font-mono text-xs text-[var(--color-text-muted)]">
-        {row.original.code}
+        {row.original.idVariedad}
       </span>
     ),
   },
   {
-    accessorKey: "name",
-    header: "Nombre",
+    accessorKey: "nombreVariedad",
+    header: "Variedad",
     cell: ({ row }) => (
-      <span className="font-medium">{row.original.name}</span>
+      <span className="font-medium">{row.original.nombreVariedad ?? "—"}</span>
     ),
   },
   {
-    accessorKey: "type",
-    header: "Tipo",
-    cell: ({ row }) => (
-      <span className="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
-        {ENTITY_TYPE_LABEL[row.original.type]}
-      </span>
-    ),
+    accessorKey: "breeder",
+    header: "Breeder",
+    cell: ({ row }) => row.original.breeder ?? "—",
   },
   {
-    accessorKey: "status",
+    accessorKey: "esActiva",
     header: "Estado",
     cell: ({ row }) => (
-      <Badge variant={STATUS_VARIANT[row.original.status]}>
-        {row.original.status}
+      <Badge variant={row.original.esActiva ? "success" : "default"}>
+        {row.original.esActiva ? "Activa" : "Inactiva"}
       </Badge>
     ),
   },
   {
-    accessorKey: "completeness",
-    header: "Completitud",
-    cell: ({ row }) => {
-      const v = row.original.completeness;
-      const tone =
-        v >= 90 ? "success" : v >= 80 ? "warning" : "destructive";
-      return (
-        <div className="flex items-center gap-2">
-          <span
-            className={cn(
-              "tabular-nums w-12 text-right text-xs font-semibold",
-              tone === "success" && "text-[var(--color-success)]",
-              tone === "warning" && "text-[var(--color-warning)]",
-              tone === "destructive" && "text-[var(--color-destructive)]",
-            )}
-          >
-            {formatPercent(v, 0)}
-          </span>
-          <div className="bg-[var(--color-surface-2)] h-1.5 w-24 overflow-hidden rounded-full">
-            <div
-              className={cn(
-                "h-full",
-                tone === "success" && "bg-[var(--color-success)]",
-                tone === "warning" && "bg-[var(--color-warning)]",
-                tone === "destructive" && "bg-[var(--color-destructive)]",
-              )}
-              style={{ width: `${v}%` }}
-            />
-          </div>
-        </div>
-      );
-    },
+    accessorKey: "fechaModificacion",
+    header: "Modificada",
+    cell: ({ row }) =>
+      row.original.fechaModificacion
+        ? formatDate(row.original.fechaModificacion)
+        : "—",
+  },
+];
+
+const GEOGRAFIA_COLUMNS: ColumnDef<Geografia>[] = [
+  {
+    accessorKey: "fundo",
+    header: "Fundo",
+    cell: ({ row }) => row.original.fundo ?? "—",
   },
   {
-    accessorKey: "owner",
-    header: "Responsable",
+    accessorKey: "sector",
+    header: "Sector",
+    cell: ({ row }) => row.original.sector ?? "—",
   },
   {
-    accessorKey: "updatedAt",
-    header: "Actualizado",
+    accessorKey: "modulo",
+    header: "Módulo",
     cell: ({ row }) => (
-      <span className="tabular-nums text-xs text-[var(--color-text-muted)]">
-        {formatDate(row.original.updatedAt)}
-      </span>
+      <span className="tabular-nums">{row.original.modulo ?? "—"}</span>
+    ),
+  },
+  {
+    accessorKey: "turno",
+    header: "Turno",
+    cell: ({ row }) => (
+      <span className="tabular-nums">{row.original.turno ?? "—"}</span>
+    ),
+  },
+  {
+    accessorKey: "valvula",
+    header: "Válvula",
+    cell: ({ row }) => row.original.valvula ?? "—",
+  },
+  {
+    accessorKey: "esVigente",
+    header: "Vigencia",
+    cell: ({ row }) => (
+      <Badge variant={row.original.esVigente ? "success" : "default"}>
+        {row.original.esVigente ? "Vigente" : "Histórica"}
+      </Badge>
     ),
   },
 ];
 
-export function EntitiesClient({ data }: { data: MdmEntity[] }) {
-  const [active, setActive] = React.useState<EntityType | "all">("all");
+const PERSONAL_COLUMNS: ColumnDef<Personal>[] = [
+  {
+    accessorKey: "dni",
+    header: "DNI",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">{row.original.dni ?? "—"}</span>
+    ),
+  },
+  {
+    accessorKey: "nombreCompleto",
+    header: "Nombre",
+    cell: ({ row }) => (
+      <span className="font-medium">{row.original.nombreCompleto ?? "—"}</span>
+    ),
+  },
+  {
+    accessorKey: "rol",
+    header: "Rol",
+    cell: ({ row }) => row.original.rol ?? "—",
+  },
+  {
+    accessorKey: "pctAsertividad",
+    header: "Asertividad",
+    cell: ({ row }) =>
+      row.original.pctAsertividad != null ? (
+        <span className="tabular-nums">
+          {row.original.pctAsertividad.toFixed(1)}%
+        </span>
+      ) : (
+        "—"
+      ),
+  },
+  {
+    accessorKey: "diasAusentismo",
+    header: "Ausentismo (días)",
+    cell: ({ row }) => (
+      <span className="tabular-nums">{row.original.diasAusentismo ?? "—"}</span>
+    ),
+  },
+];
 
-  const filtered = React.useMemo(() => {
-    if (active === "all") return data;
-    return data.filter((e) => e.type === active);
-  }, [active, data]);
+function TabLoading() {
+  return (
+    <div className="flex flex-col gap-2 pt-2" aria-busy="true">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Skeleton key={i} className="h-9 w-full rounded" />
+      ))}
+    </div>
+  );
+}
+
+export function EntitiesClient() {
+  const variedades = useVariedadesDim(PAGE);
+  const geografia = useGeografia(PAGE);
+  const personal = usePersonal(PAGE);
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div
-          role="tablist"
-          aria-label="Filtro por tipo de entidad"
-          className="bg-surface inline-flex h-10 items-center gap-1 rounded-md border border-[var(--color-border)] p-1"
-        >
-          {TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              role="tab"
-              aria-selected={active === tab.value}
-              onClick={() => setActive(tab.value)}
-              className={cn(
-                "h-8 rounded-md px-3 text-sm font-medium transition",
-                active === tab.value
-                  ? "bg-[var(--color-surface-2)] text-[var(--color-text)]"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]",
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        <Button>
-          <Plus aria-hidden className="h-4 w-4" />
-          Nueva entidad
-        </Button>
-      </div>
+    <Tabs defaultValue="variedades" className="w-full">
+      <TabsList>
+        <TabsTrigger value="variedades">Variedades</TabsTrigger>
+        <TabsTrigger value="geografia">Geografía</TabsTrigger>
+        <TabsTrigger value="personal">Personal</TabsTrigger>
+      </TabsList>
 
-      <DataTable
-        columns={COLUMNS}
-        data={filtered}
-        searchPlaceholder="Buscar por nombre, código u responsable…"
-        emptyMessage="No hay entidades para los filtros aplicados."
-      />
-    </div>
+      <TabsContent value="variedades">
+        {variedades.isLoading && !variedades.data ? (
+          <TabLoading />
+        ) : (
+          <DataTable
+            columns={VARIEDAD_COLUMNS}
+            data={variedades.data?.datos ?? []}
+            searchPlaceholder="Buscar variedad o breeder…"
+            emptyMessage="Sin variedades registradas."
+          />
+        )}
+      </TabsContent>
+
+      <TabsContent value="geografia">
+        {geografia.isLoading && !geografia.data ? (
+          <TabLoading />
+        ) : (
+          <DataTable
+            columns={GEOGRAFIA_COLUMNS}
+            data={geografia.data?.datos ?? []}
+            searchPlaceholder="Buscar fundo, sector o módulo…"
+            emptyMessage="Sin registros de geografía."
+          />
+        )}
+      </TabsContent>
+
+      <TabsContent value="personal">
+        {personal.isLoading && !personal.data ? (
+          <TabLoading />
+        ) : (
+          <DataTable
+            columns={PERSONAL_COLUMNS}
+            data={personal.data?.datos ?? []}
+            searchPlaceholder="Buscar por nombre o DNI…"
+            emptyMessage="Sin personal registrado."
+          />
+        )}
+      </TabsContent>
+    </Tabs>
   );
 }
