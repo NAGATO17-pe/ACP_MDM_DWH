@@ -16,6 +16,7 @@ import {
   DwhState,
   EtlRun,
   EtlTrendPoint,
+  FactFreshness,
   QualityKpis,
   SystemHealth,
 } from "@/lib/schemas/control-center";
@@ -152,6 +153,17 @@ export function useDwhState(): UseQueryResult<DwhState> {
   return useQuery({
     queryKey: ["cc", "dwh"],
     queryFn: () => fetchAndParse("/api/cc/dwh", DwhState),
+    refetchInterval: 120_000,
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useFactFreshness(): UseQueryResult<FactFreshness[]> {
+  return useQuery({
+    queryKey: ["cc", "dwh-facts"],
+    queryFn: () =>
+      fetchAndParse("/api/cc/dwh/facts", z.array(FactFreshness)),
     refetchInterval: 120_000,
     staleTime: 60_000,
     placeholderData: keepPreviousData,

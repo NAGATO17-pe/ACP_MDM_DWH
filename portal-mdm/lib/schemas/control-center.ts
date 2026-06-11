@@ -114,6 +114,13 @@ export const DwhState = z.object({
 });
 export type DwhState = z.infer<typeof DwhState>;
 
+/** Frescura por fact — nombre + última carga exitosa. */
+export const FactFreshness = z.object({
+  name: z.string(),
+  lastSuccessAt: z.string().nullable(),
+});
+export type FactFreshness = z.infer<typeof FactFreshness>;
+
 export const Alert = z.object({
   id: z.string(),
   severity: z.enum(["critical", "warning", "info"]),
