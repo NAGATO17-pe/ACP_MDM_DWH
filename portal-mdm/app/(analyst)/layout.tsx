@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/auth/require-role";
+import { requireAnyRole } from "@/lib/auth/require-role";
 import { RoleShell } from "@/components/layout/role-shell";
 import { buildNavGroups } from "@/lib/routes";
 
@@ -7,12 +7,12 @@ export default async function AnalystLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await requireRole("analyst");
-  const navItems = buildNavGroups("analyst").flatMap((g) => g.items);
+  const session = await requireAnyRole(["analyst", "admin"]);
+  const navItems = buildNavGroups(session.role).flatMap((g) => g.items);
 
   return (
     <RoleShell
-      role="analyst"
+      role={session.role}
       userName={session.name ?? session.username}
       navItems={navItems}
     >
