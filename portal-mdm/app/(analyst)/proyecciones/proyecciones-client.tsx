@@ -33,6 +33,8 @@ import type {
   ProyeccionDetalle,
   RespuestaProyeccion,
 } from "@/lib/schemas/proyecciones";
+import { MatrixEditor } from "./matrix-editor";
+import type { MatrizInputs } from "@/lib/schemas/proyecciones";
 
 const TODOS = "__todos__";
 
@@ -51,6 +53,7 @@ export function ProyeccionesClient() {
 
   const combinaciones = useCombinaciones(idTiempo);
   const ejecutar = useEjecutarProyeccion();
+  const [matriz, setMatriz] = React.useState<MatrizInputs | null>(null);
 
   React.useEffect(() => {
     if (idTiempo == null && fechas.data?.fechas.length)
@@ -78,6 +81,7 @@ export function ProyeccionesClient() {
       ...(variedad !== TODOS ? { variedad } : {}),
       ...(condicion !== TODOS ? { condicion } : {}),
       ...(fundo !== TODOS ? { fundo } : {}),
+      ...(matriz ? { matriz_inputs: matriz } : {}),
     });
   }
 
@@ -182,7 +186,7 @@ export function ProyeccionesClient() {
         </Card>
       )}
 
-      {/* MatrixEditor (Task 9) */}
+      <MatrixEditor onMatrizChange={setMatriz} />
     </div>
   );
 }
