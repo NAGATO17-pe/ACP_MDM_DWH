@@ -27,6 +27,7 @@ import {
   Settings,
   ShieldAlert,
   ShieldCheck,
+  Sprout,
   Telescope,
   Workflow,
   type LucideIcon,
@@ -149,6 +150,14 @@ export const ROUTES = {
     icon: FlaskConical,
     roles: [ANALYST, ADMIN],
     section: "analisis",
+  },
+  proyecciones: {
+    path: "/proyecciones",
+    label: "Proyecciones",
+    icon: Sprout,
+    roles: [ANALYST, ADMIN],
+    section: "analisis",
+    description: "Motor Six-Week: kg proyectados por semana a partir de conteos fenológicos.",
   },
   reports: {
     path: "/reports",

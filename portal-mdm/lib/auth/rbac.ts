@@ -23,6 +23,7 @@ export const ROUTE_ACL: ReadonlyArray<{ path: string; roles: ReadonlyArray<Role>
   { path: "/explore",       roles: ["analyst", "admin"] },
   { path: "/models",        roles: ["analyst", "admin"] },
   { path: "/reports",       roles: ["analyst", "admin"] },
+  { path: "/proyecciones",  roles: ["analyst", "admin"] },
   { path: "/catalogos",     roles: ["admin", "analyst"] },
   { path: "/bitacora",      roles: ["admin"] },
   { path: "/configuracion", roles: ["admin"] },
