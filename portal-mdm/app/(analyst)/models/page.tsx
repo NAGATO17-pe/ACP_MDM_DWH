@@ -36,6 +36,15 @@ export default function ModelsListPage() {
         description="Catálogo de modelos analíticos disponibles para exploración y reporte."
       />
 
+      <Badge
+        variant="warning"
+        className="w-fit gap-1.5"
+        title="Backend de modelos en roadmap — los datos mostrados son de ejemplo"
+      >
+        <FlaskConical aria-hidden className="h-3 w-3" />
+        Datos de demostración
+      </Badge>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {MODELS.map((model) => (
           <Link
