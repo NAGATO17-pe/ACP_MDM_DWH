@@ -17,7 +17,9 @@ import {
   EtlRun,
   EtlTrendPoint,
   FactFreshness,
+  QualityByTable,
   QualityKpis,
+  QualityTrendPoint,
   SystemHealth,
 } from "@/lib/schemas/control-center";
 import { CorridaActiva } from "@/lib/schemas/etl-launch";
@@ -244,6 +246,33 @@ export function useCancelCorrida(): UseMutationResult<
       qc.invalidateQueries({ queryKey: ["cc", "etl-runs"] });
       qc.invalidateQueries({ queryKey: ["cc", "etl-trend"] });
     },
+  });
+}
+
+export function useQualityTrend(
+  days = 30,
+): UseQueryResult<QualityTrendPoint[]> {
+  return useQuery({
+    queryKey: ["cc", "quality-trend", days],
+    queryFn: () =>
+      fetchAndParse(
+        `/api/cc/quality/trend?days=${days}`,
+        z.array(QualityTrendPoint),
+      ),
+    refetchInterval: 120_000,
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useQualityByTable(): UseQueryResult<QualityByTable[]> {
+  return useQuery({
+    queryKey: ["cc", "quality-by-table"],
+    queryFn: () =>
+      fetchAndParse("/api/cc/quality/by-table", z.array(QualityByTable)),
+    refetchInterval: 120_000,
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 }
 
