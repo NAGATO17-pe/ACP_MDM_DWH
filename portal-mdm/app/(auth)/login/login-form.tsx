@@ -45,8 +45,10 @@ export function LoginForm() {
           | null;
         if (me && isValidRole(me.role) && !next) target = ROLE_HOME[me.role];
       }
-      router.replace(target);
-      router.refresh();
+      // Hard redirect: garantiza que el servidor lea la cookie antes de
+      // renderizar el layout protegido. router.replace() + router.refresh()
+      // puede crear race condition con cookies httpOnly en Next.js 16.
+      window.location.href = target;
     } catch {
       setServerError("Error de red. Reintenta en unos segundos.");
     }

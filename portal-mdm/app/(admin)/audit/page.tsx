@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireRole } from "@/lib/auth/require-role";
 import { cookies } from "next/headers";
 import {
   Activity,
@@ -19,6 +20,7 @@ import { JWT_COOKIE_NAME } from "@/lib/auth/session";
 export const metadata: Metadata = { title: "Auditoría ETL — Portal MDM" };
 
 export default async function AuditPage() {
+  await requireRole("admin");
   const cookieStore = await cookies();
   const token = cookieStore.get(JWT_COOKIE_NAME)?.value;
   

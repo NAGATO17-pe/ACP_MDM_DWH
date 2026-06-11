@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
+import { requireRole } from "@/lib/auth/require-role";
 import { Dashboard } from "@/components/control-center/dashboard";
 import { prefetchDashboard } from "@/lib/control-center/dashboard-prefetch";
 
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
  * comportamiento normal: skeleton + fetch en `useEffect`.
  */
 export default async function AdminDashboardPage() {
+  await requireRole("admin");
   const qc = new QueryClient();
   await prefetchDashboard(qc);
 

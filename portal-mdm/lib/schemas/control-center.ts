@@ -100,6 +100,25 @@ export const QualityKpis = z.object({
 });
 export type QualityKpis = z.infer<typeof QualityKpis>;
 
+/** Punto de tendencia de calidad — derivado de bitácora por día. */
+export const QualityTrendPoint = z.object({
+  date: z.string(), // YYYY-MM-DD
+  insertadas: z.number().int().nonnegative(),
+  rechazadas: z.number().int().nonnegative(),
+  tasaRechazo: z.number().min(0).max(100),
+});
+export type QualityTrendPoint = z.infer<typeof QualityTrendPoint>;
+
+/** Agregado de cuarentena por tabla origen. */
+export const QualityByTable = z.object({
+  tabla: z.string(),
+  pendientes: z.number().int().nonnegative(),
+  resueltos: z.number().int().nonnegative(),
+  descartados: z.number().int().nonnegative(),
+  total: z.number().int().nonnegative(),
+});
+export type QualityByTable = z.infer<typeof QualityByTable>;
+
 /**
  * Estado del DWH — derivado del catálogo de facts (/etl/facts) y del
  * log de cargas reciente. No exponemos storageBytes/growth porque el
