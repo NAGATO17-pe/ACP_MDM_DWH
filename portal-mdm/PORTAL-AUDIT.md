@@ -206,6 +206,8 @@ Un usuario admin (40) pasa `require_rol("analista_mdm")` porque 40 ≥ 20.
 | Admin redirigido de rutas analyst | `app/(analyst)/layout.tsx` | `requireRole("analyst")` → `requireAnyRole(["analyst","admin"])` | 41993f0 |
 | `/dashboard` "Página no encontrada" | `login-form.tsx` | `router.replace+refresh` → `window.location.href` | (2026-06-11) |
 | Analysts accedían a páginas admin-only | dashboard/dwh/bitacora/configuracion/audit page.tsx | `requireRole("admin")` en cada página | (2026-06-11) |
+| Widgets analista vacíos — queries a vistas Gold inexistentes | `backend/servicios/servicio_analista_charts.py` | Reescritura completa: `Gold.vw_*` → JOINs directos a `Silver.Fact_Cosecha_SAP` | 8b07d57 |
+| Workspace analista siempre vacío — faltaba endpoint `/home` | `backend/api/rutas_analista.py` | GET+PATCH `/v1/analista/home` persiste layout en `Config.Parametros_Pipeline` | 8b07d57 |
 
 ---
 
